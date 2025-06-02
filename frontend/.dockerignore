@@ -1,0 +1,25 @@
+# Node modules and build output
+node_modules
+.next
+.git
+coverage
+Dockerfile
+.gitignore
+README.md
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Vercel/Netlify configs (if used)
+.vercel
+.netlify

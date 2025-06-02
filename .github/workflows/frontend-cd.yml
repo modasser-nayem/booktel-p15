@@ -1,0 +1,57 @@
+name: Frontend CD
+
+on:
+   push:
+      paths:
+         - "frontend/**"
+      branches:
+         - main
+
+jobs:
+   cd:
+      runs-on: ubuntu-latest
+
+      defaults:
+         run:
+            working-directory: frontend
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v3
+
+         - name: Setup Node.js
+           uses: actions/setup-node@v3
+           with:
+              node-version: "20"
+
+         - name: Install dependencies
+           run: npm install
+
+         - name: Lint code
+           run: npm run lint
+
+         - name: Build app
+           run: npm run build
+
+         - name: Build Docker image
+           run: docker build -t ${{ secrets.DOCKER_IMAGE_NAME_FRONTEND }} .
+
+         - name: Login to DockerHub
+           run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+         - name: Push Docker image
+           run: docker push ${{ secrets.DOCKER_IMAGE_NAME_FRONTEND }}
+
+         - name: Discord Notify Success
+           if: success()
+           run: |
+              curl -X POST -H "Content-Type: application/json" \
+                -d '{"content":"✅ Booktel Frontend CD Success: `${{ secrets.DOCKER_IMAGE_NAME_FRONTEND }}` pushed to DockerHub."}' \
+                ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+         - name: Discord Notify Failure
+           if: failure()
+           run: |
+              curl -X POST -H "Content-Type: application/json" \
+                -d '{"content":"❌ Booktel Frontend CD Failed: `${{ secrets.DOCKER_IMAGE_NAME_FRONTEND }}`. Check GitHub logs."}' \
+                ${{ secrets.DISCORD_WEBHOOK_URL }}
