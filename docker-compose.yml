@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+   database:
+      image: postgres:16
+      container_name: booktel_db
+      restart: always
+      environment:
+         - POSTGRES_USER=postgres
+         - POSTGRES_PASSWORD=postgres
+         - POSTGRES_DB=booktel_db
+      ports:
+         - "5432:5432"
+      volumes:
+         - postgres_data:/var/lib/postgresql/data
+      healthcheck:
+         test: ["CMD", "pg_isready", "-U", "postgres"]
+         interval: 10s
+         timeout: 5s
+         retries: 5
+
+   backend:
+      build:
+         context: ./backend
+      container_name: booktel_backend
+      restart: always
+      env_file:
+         - ./backend/.env
+      environment:
+         - NODE_ENV=production
+      ports:
+         - "5000:5000"
+      depends_on:
+         - database
+
+   frontend:
+      build:
+         context: ./frontend
+      container_name: booktel_frontend
+      restart: always
+      env_file:
+         - ./frontend/.env.production
+      environment:
+         - NODE_ENV=production
+      ports:
+         - "3000:3000"
+      depends_on:
+         - backend
+
+volumes:
+   postgres_data:
