@@ -15,15 +15,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-    id        String   @id @default(uuid())
-    name      String
-    email     String   @unique
-    password  String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@map("users")
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  hotels    Hotel[]  @relation("HotelOwner")
+  bookings  Booking[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+enum Role {
+  ADMIN
+  HOTEL_OWNER
+  CUSTOMER
+}
+
+model Hotel {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  location    String
+  status      HotelStatus @default(PENDING)
+  amenities   String[]
+  photos      String[]
+  owner       User     @relation("HotelOwner", fields: [ownerId], references: [id])
+  ownerId     String
+  rooms       Room[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum HotelStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+model Room {
+  id           String   @id @default(uuid())
+  hotel        Hotel    @relation(fields: [hotelId], references: [id])
+  hotelId      String
+  type         RoomType
+  price        Float
+  beds         Int
+  photos       String[]
+  availableFrom DateTime
+  availableTo   DateTime
+  bookings     Booking[]
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  DELUXE
+  SUITE
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  room       Room     @relation(fields: [roomId], references: [id])
+  roomId     String
+  fromDate   DateTime
+  toDate     DateTime
+  totalPrice Float
+  status     BookingStatus @default(BOOKED)
+  payment    Payment?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+}
+
+model Payment {
+  id         String   @id @default(uuid())
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  bookingId  String   @unique
+  amount     Float
+  method     String
+  status     PaymentStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}

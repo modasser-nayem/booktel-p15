@@ -24,6 +24,31 @@ const loginUser = async (req: Request, res: Response) => {
   });
 };
 
+const forgotPassword = async (req: Request, res: Response) => {
+  const result = await authService.forgotPassword({ data: req.body });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Check your mail to reset your password",
+    data: result,
+  });
+};
+
+const resetPassword = async (req: Request, res: Response) => {
+  const result = await authService.resetPassword({
+    data: req.body,
+    token: req.query?.token as string | undefined,
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Password successfully updated",
+    data: result,
+  });
+};
+
 const getUsers = async (req: Request, res: Response) => {
   const result = await authService.getUsers();
 
@@ -35,4 +60,10 @@ const getUsers = async (req: Request, res: Response) => {
   });
 };
 
-export const authController = { signupUser, loginUser, getUsers };
+export const authController = {
+  signupUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+  getUsers,
+};

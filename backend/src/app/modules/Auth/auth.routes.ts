@@ -6,18 +6,32 @@ import { authSchemaValidation } from "./auth.validation";
 
 const router = Router();
 
-// signup user
+// Register user
 router.post(
   "/signup",
   requestValidate(authSchemaValidation.signup),
   asyncHandler(authController.signupUser),
 );
 
-// login user
+// Login user
 router.post(
   "/login",
   requestValidate(authSchemaValidation.login),
   asyncHandler(authController.loginUser),
+);
+
+// Forgot Password -> send reset link in mail
+router.post(
+  "/forgot",
+  requestValidate(authSchemaValidation.forgotPassword),
+  asyncHandler(authController.forgotPassword),
+);
+
+// Reset password
+router.post(
+  "/reset",
+  requestValidate(authSchemaValidation.resetPassword),
+  asyncHandler(authController.resetPassword),
 );
 
 // get users

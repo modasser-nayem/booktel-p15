@@ -1,8 +1,15 @@
+import config from "../../config";
 import { userRepository } from "../../db/repositories/user.repository";
 import AppError from "../../errors/AppError";
+import { emailHelper } from "../../utils/email";
 import passwordHelper from "../../utils/hash";
 import jwtHelper from "../../utils/jwt";
-import { TLoginUser, TSignupUser } from "./auth.interface";
+import {
+  TForgotPassword,
+  TLoginUser,
+  TResetPassword,
+  TSignupUser,
+} from "./auth.interface";
 
 const signupUser = async (payload: { data: TSignupUser }) => {
   payload.data.password = await passwordHelper.hashPassword(
@@ -22,6 +29,16 @@ const signupUser = async (payload: { data: TSignupUser }) => {
     name: payload.data.name,
     email: payload.data.email,
     password: payload.data.password,
+  });
+
+  const htmlTemplate = emailHelper.mailTemplate.accountCreationEmail(
+    result.name,
+  );
+
+  await emailHelper.sendEmail({
+    to: result.email,
+    subject: "Booktel Account successfully created",
+    htmlTemplate,
   });
 
   return result;
@@ -57,8 +74,74 @@ const loginUser = async (payload: { data: TLoginUser }) => {
   return { access_token };
 };
 
+const forgotPassword = async (payload: { data: TForgotPassword }) => {
+  const user = await userRepository.findUserByEmail(payload.data.email);
+
+  // check user exist
+  if (!user) {
+    throw new AppError(404, "User not found!");
+  }
+
+  const token = jwtHelper.signForgotPassToken({
+    userId: user.id,
+  });
+
+  const resetLink = `${config.RESET_PASS_URL}?token=${token}`;
+
+  const htmlTemplate = emailHelper.mailTemplate.forgotPasswordEmail(
+    user.name,
+    resetLink,
+    config.JWT_FORGOT_PASS_EXPIRES_IN,
+  );
+
+  await emailHelper.sendEmail({
+    to: user.email,
+    subject: "Booktel forgot password request!",
+    htmlTemplate,
+  });
+
+  return null;
+};
+
+const resetPassword = async (payload: {
+  data: TResetPassword;
+  token?: string;
+}) => {
+  if (!payload.token) {
+    throw new AppError(403, "invalid request");
+  }
+
+  const decode = jwtHelper.verifyForgotPassToken(payload.token);
+
+  const user = await userRepository.findUSerById(decode.userId);
+
+  // check user exist
+  if (!user) {
+    throw new AppError(403, "invalid request");
+  }
+
+  // hash new password
+  payload.data.newPassword = await passwordHelper.hashPassword(
+    payload.data.newPassword,
+  );
+
+  // update in db
+  await userRepository.updatePassword({
+    userId: user.id,
+    newPassword: payload.data.newPassword,
+  });
+
+  return null;
+};
+
 const getUsers = async () => {
   return await userRepository.getUsers();
 };
 
-export const authService = { signupUser, loginUser, getUsers };
+export const authService = {
+  signupUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+  getUsers,
+};
