@@ -35,7 +35,35 @@ const login = z.object({
     .refine((value) => value !== "", { message: "password is required" }),
 });
 
+const forgotPassword = z.object({
+  email: z
+    .string({ required_error: "email is required" })
+    .email({ message: "invalid email address" })
+    .refine((value) => value !== "", { message: "email is required" }),
+});
+
+const resetPassword = z
+  .object({
+    newPassword: z
+      .string({ required_error: "newPassword is required" })
+      .refine((value) => value !== "", { message: "New password is required" })
+      .refine((value) => value.length >= 6, {
+        message: "password must be more then 5 character",
+      }),
+    confirmPassword: z
+      .string({ required_error: "confirmPassword is required" })
+      .refine((value) => value !== "", {
+        message: "confirmPassword is required",
+      }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
 export const authSchemaValidation = {
   signup,
   login,
+  forgotPassword,
+  resetPassword,
 };

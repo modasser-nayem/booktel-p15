@@ -28,6 +28,17 @@ const findUserByEmail = async (
   });
 };
 
+const findUSerById = async (id: string) => {
+  return await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+    },
+  });
+};
+
 const createNewUser = async (data: TSignupUser) => {
   return await prisma.user.create({
     data: {
@@ -39,8 +50,26 @@ const createNewUser = async (data: TSignupUser) => {
       id: true,
       name: true,
       email: true,
+      role: true,
       createdAt: true,
       updatedAt: true,
+    },
+  });
+};
+
+const updatePassword = async (data: {
+  userId: string;
+  newPassword: string;
+}) => {
+  return await prisma.user.update({
+    where: { id: data.userId },
+    data: {
+      password: data.newPassword,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
     },
   });
 };
@@ -55,4 +84,10 @@ const getUsers = async () => {
   });
 };
 
-export const userRepository = { findUserByEmail, createNewUser, getUsers };
+export const userRepository = {
+  findUserByEmail,
+  findUSerById,
+  createNewUser,
+  updatePassword,
+  getUsers,
+};

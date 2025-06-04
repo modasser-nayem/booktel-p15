@@ -8,3 +8,9 @@ export type TSignupUser = {
 };
 
 export type TLoginUser = z.infer<typeof authSchemaValidation.login>;
+
+export type TForgotPassword = z.infer<
+  typeof authSchemaValidation.forgotPassword
+>;
+
+export type TResetPassword = z.infer<typeof authSchemaValidation.resetPassword>;

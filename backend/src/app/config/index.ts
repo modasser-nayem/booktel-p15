@@ -18,4 +18,5 @@ export default {
   SMTP_PORT: requireNumberEnv("SMTP_PORT"),
   SMTP_USER: requireEnv("SMTP_USER"),
   SMTP_PASS: requireEnv("SMTP_PASS"),
+  MAILBOXLAYER_ACCESS_KEY: requireEnv("MAILBOXLAYER_ACCESS_KEY"),
 };
