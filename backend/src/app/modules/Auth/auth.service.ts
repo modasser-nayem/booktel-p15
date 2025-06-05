@@ -68,7 +68,7 @@ const loginUser = async (payload: { data: TLoginUser }) => {
 
   const access_token = jwtHelper.signAccessToken({
     id: user.id,
-    email: user.email,
+    role: user.role,
   });
 
   return { access_token };
