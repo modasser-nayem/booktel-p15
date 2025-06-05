@@ -72,7 +72,9 @@ export const globalErrorHandler: ErrorRequestHandler = (
     }
   }
 
-  logger.error(`${statusCode} - ${message}`, { stack });
+  // if (config.NODE_ENV === "development") {
+  //   logger.error(`${statusCode} - ${message}`, { stack });
+  // }
 
   res.status(statusCode).json({
     success: false,
