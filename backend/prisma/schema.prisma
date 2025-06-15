@@ -83,13 +83,14 @@ model Booking {
   fromDate   DateTime
   toDate     DateTime
   totalPrice Float
-  status     BookingStatus @default(BOOKED)
+  status     BookingStatus @default(PENDING)
   payment    Payment?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
 enum BookingStatus {
+  PENDING
   BOOKED
   CANCELLED
 }

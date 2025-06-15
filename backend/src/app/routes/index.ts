@@ -3,6 +3,8 @@ import { authRoutes } from "../modules/Auth/auth.routes";
 import { userRoutes } from "../modules/User/user.routes";
 import { hotelRoutes } from "../modules/Hotel/hotel.routes";
 import { roomRoutes } from "../modules/Room/room.routes";
+import { bookingRoutes } from "../modules/Booking/booking.routes";
+import { paymentRoutes } from "../modules/Payment/payment.routes";
 
 const routers = Router();
 const moduleRoutes: { path: string; route: Router }[] = [
@@ -21,6 +23,14 @@ const moduleRoutes: { path: string; route: Router }[] = [
   {
     path: "/",
     route: roomRoutes,
+  },
+  {
+    path: "/bookings",
+    route: bookingRoutes,
+  },
+  {
+    path: "/payments",
+    route: paymentRoutes,
   },
 ];
 
