@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import avatar from "@/app/avatar.jpg";
+import avatar from "@/public/avatar.jpg";
 import Image from "next/image";
 
 interface User {
