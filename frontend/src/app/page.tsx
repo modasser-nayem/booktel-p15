@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import UserManagement from "./components/UserManagement";
+import UserManagement from "../components/UserManagement";
 
 export default function Home() {
    const [users, setUsers] = useState([]);
