@@ -8,6 +8,9 @@ const signup = z
     email: z
       .string({ required_error: "email is required" })
       .email({ message: "invalid email address" }),
+    role: z.enum(["HOTEL_OWNER", "CUSTOMER"], {
+      required_error: "role is required",
+    }),
     password: z
       .string({ required_error: "password is required" })
       .refine((value) => value !== "", { message: "password is required" })
@@ -44,6 +47,11 @@ const forgotPassword = z.object({
 
 const resetPassword = z
   .object({
+    token: z
+      .string({ required_error: "token is required" })
+      .refine((value) => value !== "", {
+        message: "token is required",
+      }),
     newPassword: z
       .string({ required_error: "newPassword is required" })
       .refine((value) => value !== "", { message: "New password is required" })

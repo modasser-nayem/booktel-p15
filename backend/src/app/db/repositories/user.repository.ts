@@ -1,7 +1,11 @@
-import { Prisma, Role } from "@prisma/client";
+import { Prisma, Role, User } from "@prisma/client";
 import { TSignupUser } from "../../modules/Auth/auth.interface";
 import prisma from "../connector";
-import { TUpdateUserRole } from "../../modules/User/user.interface";
+import {
+  TGetUsersQuery,
+  TUpdateUserRole,
+} from "../../modules/User/user.interface";
+import { paginate } from "../../utils/pagination";
 
 const findUserByEmail = async (
   email: string,
@@ -12,6 +16,8 @@ const findUserByEmail = async (
   name: string;
   password?: string;
   role: Role;
+  createdAt: Date;
+  updatedAt: Date;
 } | null> => {
   const select: Prisma.UserSelect = {};
 
@@ -27,6 +33,8 @@ const findUserByEmail = async (
       name: true,
       role: true,
       ...select,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 };
@@ -47,11 +55,7 @@ const findUSerById = async (id: string) => {
 
 const createNewUser = async (data: TSignupUser) => {
   return await prisma.user.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      password: data.password,
-    },
+    data,
     select: {
       id: true,
       name: true,
@@ -76,6 +80,9 @@ const updatePassword = async (data: {
       id: true,
       name: true,
       email: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 };
@@ -103,17 +110,35 @@ const updateUserProfile = async (data: {
   return result;
 };
 
-const getAllUsers = async () => {
-  return await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+const getAllUsers = async (query: TGetUsersQuery) => {
+  const where: Prisma.UserWhereInput = {};
+  if (query.role) {
+    where.role = query.role as Role;
+  }
+  if (query.email) {
+    where.email = { contains: query.email, mode: "insensitive" };
+  }
+
+  const select: Prisma.UserSelect = {
+    id: true,
+    email: true,
+    name: true,
+    role: true,
+    createdAt: true,
+    updatedAt: true,
+  };
+
+  const result = await paginate<User>({
+    model: prisma.user,
+    where,
+    select,
+    sortBy: query.sortBy,
+    page: query.page,
+    limit: query.limit,
+    sortOrder: query.sortOrder,
   });
+
+  return result;
 };
 
 const updateUserRole = async ({
@@ -151,16 +176,6 @@ const deleteUser = async (userId: string) => {
   });
 };
 
-const getUsers = async () => {
-  return await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-    },
-  });
-};
-
 export const userRepository = {
   findUserByEmail,
   findUSerById,
@@ -170,5 +185,4 @@ export const userRepository = {
   getAllUsers,
   updateUserRole,
   deleteUser,
-  getUsers,
 };

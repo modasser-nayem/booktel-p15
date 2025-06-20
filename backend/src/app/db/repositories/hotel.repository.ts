@@ -1,8 +1,12 @@
+import { Hotel } from "@prisma/client";
 import {
   TCreateHotel,
+  TGetHotelsQuery,
+  TGetMyHotelsQuery,
   TUpdateHotel,
   TUpdateHotelStatus,
 } from "../../modules/Hotel/hotel.interface";
+import { paginate } from "../../utils/pagination";
 import prisma from "../connector";
 
 const getHotelById = async (id: string) => {
@@ -34,123 +38,123 @@ const createHotel = async (payload: { data: TCreateHotel }) => {
   });
 };
 
-const listOfApprovedHotel = async (query: {}) => {
-  const hotels = await prisma.hotel.findMany({
-    where: { status: "APPROVED" },
-    select: {
-      id: true,
-      name: true,
-      ownerId: true,
-      amenities: true,
-      location: true,
-      photos: true,
-      createdAt: true,
-      _count: { select: { rooms: true } },
+export const getHotels = async (query: TGetHotelsQuery) => {
+  const {
+    location,
+    status,
+    roomType,
+    priceMin,
+    priceMax,
+    amenities,
+    checkIn,
+    checkOut,
+    sortBy,
+    sortOrder,
+    page = 1,
+    limit = 10,
+  } = query;
+
+  // =======================
+  // Dynamic WHERE conditions
+  // =======================
+  const where: any = {
+    ...(location && { location: { contains: location, mode: "insensitive" } }),
+    ...(status && { status: status.toUpperCase() }), // assuming HotelStatus enum values
+    ...(amenities && {
+      amenities: {
+        hasSome: amenities, // array includes some values
+      },
+    }),
+    ...((priceMin || priceMax) && {
+      rooms: {
+        some: {
+          ...(roomType && { type: roomType.toUpperCase() }),
+          price: {
+            ...(priceMin && { gte: priceMin }),
+            ...(priceMax && { lte: priceMax }),
+          },
+          ...(checkIn &&
+            checkOut && {
+              availableFrom: { lte: new Date(checkIn) },
+              availableTo: { gte: new Date(checkOut) },
+            }),
+        },
+      },
+    }),
+  };
+
+  // =======================
+  // SELECT Fields
+  // =======================
+  const select = {
+    id: true,
+    name: true,
+    description: true,
+    amenities: true,
+    location: true,
+    photos: true,
+    status: true,
+    _count: {
+      select: {
+        rooms: true,
+      },
     },
+  };
+
+  // =======================
+  // Execute paginated query
+  // =======================
+  const result = await paginate<Hotel>({
+    model: prisma.hotel,
+    page,
+    limit,
+    where,
+    select,
+    sortBy,
+    sortOrder,
   });
 
-  return hotels.map(
-    ({
-      id,
-      name,
-      ownerId,
-      amenities,
-      location,
-      photos,
-      _count,
-      createdAt,
-    }) => ({
-      id,
-      name,
-      ownerId,
-      amenities,
-      location,
-      photos,
-      room: _count.rooms,
-      createdAt,
-    }),
-  );
+  return result;
 };
 
-const listOfAllHotel = async (query: {}) => {
-  const hotels = await prisma.hotel.findMany({
-    select: {
-      id: true,
-      name: true,
-      ownerId: true,
-      amenities: true,
-      location: true,
-      photos: true,
-      status: true,
-      createdAt: true,
-      _count: { select: { rooms: true } },
+const getMyHotels = async (payload: {
+  ownerId: string;
+  query: TGetMyHotelsQuery;
+}) => {
+  const { query } = payload;
+
+  const where = {
+    ownerId: payload.ownerId,
+    ...(query.rating && { rating: query.rating }),
+    ...(query.status && { status: query.status.toUpperCase() }),
+  };
+
+  const select = {
+    id: true,
+    name: true,
+    description: true,
+    amenities: true,
+    location: true,
+    photos: true,
+    status: true,
+    _count: {
+      select: {
+        rooms: true,
+      },
     },
+  };
+
+  const result = await paginate<Hotel>({
+    model: prisma.hotel,
+    where,
+    select,
+    sortBy: query.sortBy || "createdAt",
+    sortOrder: query.sortOrder || "desc",
+    page: query.page,
+    limit: query.limit,
   });
 
-  return hotels.map(
-    ({
-      id,
-      name,
-      ownerId,
-      amenities,
-      location,
-      photos,
-      status,
-      _count,
-      createdAt,
-    }) => ({
-      id,
-      name,
-      ownerId,
-      amenities,
-      location,
-      photos,
-      status,
-      room: _count.rooms,
-      createdAt,
-    }),
-  );
-};
-
-const listOfMyHotel = async (payload: { ownerId: string; query: {} }) => {
-  const hotels = await prisma.hotel.findMany({
-    where: { ownerId: payload.ownerId },
-    select: {
-      id: true,
-      name: true,
-      ownerId: true,
-      amenities: true,
-      location: true,
-      photos: true,
-      status: true,
-      createdAt: true,
-      _count: { select: { rooms: true } },
-    },
-  });
-
-  return hotels.map(
-    ({
-      id,
-      name,
-      ownerId,
-      amenities,
-      location,
-      photos,
-      status,
-      _count,
-      createdAt,
-    }) => ({
-      id,
-      name,
-      ownerId,
-      amenities,
-      location,
-      photos,
-      status,
-      room: _count.rooms,
-      createdAt,
-    }),
-  );
+  return result;
 };
 
 const getHotelDetails = async (hotelId: string) => {
@@ -166,6 +170,8 @@ const getHotelDetails = async (hotelId: string) => {
       photos: true,
       status: true,
       rooms: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 };
@@ -230,9 +236,8 @@ const updateHotelStatus = async (payload: {
 export const hotelRepository = {
   getHotelById,
   createHotel,
-  listOfApprovedHotel,
-  listOfAllHotel,
-  listOfMyHotel,
+  getHotels,
+  getMyHotels,
   getHotelDetails,
   updateHotel,
   deleteHotel,

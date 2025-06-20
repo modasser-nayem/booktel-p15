@@ -16,6 +16,7 @@
   "devDependencies": {
     "@prisma/client": "^6.8.2",
     "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/jest": "^29.5.14",
@@ -40,6 +41,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.6.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",

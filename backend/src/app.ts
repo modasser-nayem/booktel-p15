@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import logger from "./app/utils/logger";
 import routers from "./app/routes";
 import { notfound } from "./app/middlewares/notFound";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
+import config from "./app/config";
 
 class App {
   public app: express.Application;
@@ -16,9 +18,17 @@ class App {
   }
 
   private config() {
-    this.app.use(cors());
+    this.app.use(
+      cors({
+        origin: config.FRONTEND_URL,
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        allowedHeaders: "Content-Type, Authorization",
+        credentials: true,
+      }),
+    );
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cookieParser());
     this.app.use((req, res, next) => {
       logger.info(`${req.method} ${req.url}`);
       next();
