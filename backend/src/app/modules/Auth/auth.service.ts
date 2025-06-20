@@ -29,6 +29,12 @@ const signupUser = async (payload: { data: TSignupUser }) => {
     name: payload.data.name,
     email: payload.data.email,
     password: payload.data.password,
+    role: payload.data.role,
+  });
+
+  const access_token = jwtHelper.signAccessToken({
+    id: result.id,
+    role: result.role,
   });
 
   const htmlTemplate = emailHelper.mailTemplate.accountCreationEmail(
@@ -41,7 +47,7 @@ const signupUser = async (payload: { data: TSignupUser }) => {
     htmlTemplate,
   });
 
-  return result;
+  return { user: result, access_token };
 };
 
 const loginUser = async (payload: { data: TLoginUser }) => {
@@ -71,7 +77,17 @@ const loginUser = async (payload: { data: TLoginUser }) => {
     role: user.role,
   });
 
-  return { access_token };
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    },
+    access_token,
+  };
 };
 
 const forgotPassword = async (payload: { data: TForgotPassword }) => {
@@ -103,15 +119,8 @@ const forgotPassword = async (payload: { data: TForgotPassword }) => {
   return null;
 };
 
-const resetPassword = async (payload: {
-  data: TResetPassword;
-  token?: string;
-}) => {
-  if (!payload.token) {
-    throw new AppError(403, "invalid request");
-  }
-
-  const decode = jwtHelper.verifyForgotPassToken(payload.token);
+const resetPassword = async (payload: { data: TResetPassword }) => {
+  const decode = jwtHelper.verifyForgotPassToken(payload.data.token);
 
   const user = await userRepository.findUSerById(decode.userId);
 
@@ -134,14 +143,9 @@ const resetPassword = async (payload: {
   return null;
 };
 
-const getUsers = async () => {
-  return await userRepository.getUsers();
-};
-
 export const authService = {
   signupUser,
   loginUser,
   forgotPassword,
   resetPassword,
-  getUsers,
 };

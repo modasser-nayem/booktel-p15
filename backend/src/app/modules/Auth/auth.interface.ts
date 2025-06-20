@@ -5,6 +5,7 @@ export type TSignupUser = {
   name: string;
   email: string;
   password: string;
+  role: "HOTEL_OWNER" | "CUSTOMER";
 };
 
 export type TLoginUser = z.infer<typeof authSchemaValidation.login>;

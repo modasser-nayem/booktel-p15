@@ -1,7 +1,11 @@
 import { JwtPayload } from "jsonwebtoken";
 import { userRepository } from "../../db/repositories/user.repository";
 import AppError from "../../errors/AppError";
-import { TUpdateProfile, TUpdateUserRole } from "./user.interface";
+import {
+  TGetUsersQuery,
+  TUpdateProfile,
+  TUpdateUserRole,
+} from "./user.interface";
 
 const getProfile = async (payload: { user: JwtPayload }) => {
   const user = await userRepository.findUSerById(payload.user.id);
@@ -30,8 +34,8 @@ const updateProfile = async (payload: {
   });
 };
 
-const getAllUsers = async (payload: {}) => {
-  return await userRepository.getAllUsers();
+const getAllUsers = async (payload: { query: TGetUsersQuery }) => {
+  return await userRepository.getAllUsers(payload.query);
 };
 
 const getUserDetails = async (payload: { userId: string }) => {

@@ -20,6 +20,9 @@ router.post(
   asyncHandler(authController.loginUser),
 );
 
+// Logged out user
+router.post("/logout", asyncHandler(authController.logoutUser));
+
 // Forgot Password -> send reset link in mail
 router.post(
   "/forgot",
@@ -33,8 +36,5 @@ router.post(
   requestValidate(authSchemaValidation.resetPassword),
   asyncHandler(authController.resetPassword),
 );
-
-// get users
-router.get("/users", asyncHandler(authController.getUsers));
 
 export const authRoutes = router;

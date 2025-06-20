@@ -16,8 +16,8 @@ const createHotel = async (req: Request, res: Response) => {
   });
 };
 
-const listOfApprovedHotel = async (req: Request, res: Response) => {
-  const result = await hotelService.listOfApprovedHotel({ query: req.query });
+const getHotels = async (req: Request, res: Response) => {
+  const result = await hotelService.getHotels({ query: req.query });
 
   sendResponse(res, {
     statusCode: 200,
@@ -27,27 +27,16 @@ const listOfApprovedHotel = async (req: Request, res: Response) => {
   });
 };
 
-const listOfAllHotel = async (req: Request, res: Response) => {
-  const result = await hotelService.listOfAllHotel({ query: req.query });
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: "Successfully retrieved list of hotels",
-    data: result,
-  });
-};
-
-const listOfMyHotel = async (req: Request, res: Response) => {
-  const result = await hotelService.listOfMyHotel({
-    owner: req.user,
+const getMyHotels = async (req: Request, res: Response) => {
+  const result = await hotelService.getMyHotels({
+    ownerId: req.user.id,
     query: req.query,
   });
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "Successfully retrieved list of hotels",
+    message: "Successfully retrieved list of my hotels",
     data: result,
   });
 };
@@ -104,9 +93,8 @@ const updateHotelStatus = async (req: Request, res: Response) => {
 
 export const hotelController = {
   createHotel,
-  listOfApprovedHotel,
-  listOfAllHotel,
-  listOfMyHotel,
+  getHotels,
+  getMyHotels,
   getHotelDetails,
   updateHotel,
   deleteHotel,

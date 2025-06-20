@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { JwtPayload } from "jsonwebtoken";
 import {
   TCreateHotel,
+  TGetHotelsQuery,
+  TGetMyHotelsQuery,
   TUpdateHotel,
   TUpdateHotelStatus,
 } from "./hotel.interface";
@@ -18,17 +18,16 @@ const createHotel = async (payload: {
   return await hotelRepository.createHotel({ data: payload.data });
 };
 
-const listOfApprovedHotel = async (payload: { query: any }) => {
-  return await hotelRepository.listOfApprovedHotel(payload.query);
+const getHotels = async (payload: { query: TGetHotelsQuery }) => {
+  return await hotelRepository.getHotels(payload.query);
 };
 
-const listOfAllHotel = async (payload: { query: any }) => {
-  return await hotelRepository.listOfAllHotel(payload.query);
-};
-
-const listOfMyHotel = async (payload: { owner: JwtPayload; query: any }) => {
-  return await hotelRepository.listOfMyHotel({
-    ownerId: payload.owner.id,
+const getMyHotels = async (payload: {
+  ownerId: string;
+  query: TGetMyHotelsQuery;
+}) => {
+  return await hotelRepository.getMyHotels({
+    ownerId: payload.ownerId,
     query: payload.query,
   });
 };
@@ -81,9 +80,8 @@ const updateHotelStatus = async (payload: {
 
 export const hotelService = {
   createHotel,
-  listOfApprovedHotel,
-  listOfAllHotel,
-  listOfMyHotel,
+  getHotels,
+  getMyHotels,
   getHotelDetails,
   updateHotel,
   deleteHotel,

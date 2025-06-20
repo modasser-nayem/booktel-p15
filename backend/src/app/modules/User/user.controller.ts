@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import sendResponse from "../../utils/sendResponse";
 import { userService } from "./user.service";
+import { query } from "winston";
 
 const getProfile = async (req: Request, res: Response) => {
   const result = await userService.getProfile({ user: req.user });
@@ -28,7 +29,7 @@ const updateProfile = async (req: Request, res: Response) => {
 };
 
 const getAllUsers = async (req: Request, res: Response) => {
-  const result = await userService.getAllUsers({});
+  const result = await userService.getAllUsers({ query: req.query });
 
   sendResponse(res, {
     statusCode: 200,

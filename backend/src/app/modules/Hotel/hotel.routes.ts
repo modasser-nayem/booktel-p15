@@ -15,21 +15,14 @@ router.post(
   asyncHandler(hotelController.createHotel),
 );
 
-// List approved hotels (filters: location, price, rating)
-router.get("/", asyncHandler(hotelController.listOfApprovedHotel));
-
-// Admin - List of all hotels (filters: status)
-router.get(
-  "/admin",
-  authorize("ADMIN"),
-  asyncHandler(hotelController.listOfAllHotel),
-);
+// get all hotels (filters: location, price, rating, status)
+router.get("/", asyncHandler(hotelController.getHotels));
 
 // HotelOwner - List of my hotels (filters: location, price, rating, status)
 router.get(
   "/me",
   authorize("HOTEL_OWNER"),
-  asyncHandler(hotelController.listOfMyHotel),
+  asyncHandler(hotelController.getMyHotels),
 );
 
 // Get hotel details

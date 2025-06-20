@@ -8,7 +8,7 @@ import { userRepository } from "../db/repositories/user.repository";
 export const authorize = (...roles: Role[]) => {
   return asyncHandler(
     async (req: Request, _res: Response, next: NextFunction) => {
-      const token = req.headers.authorization;
+      const token = req.cookies.accessToken;
       if (!token) throw new AppError(401, "unauthorized access");
 
       const decoded = jwtHelper.verifyAccessToken(token);
