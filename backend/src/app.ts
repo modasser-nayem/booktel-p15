@@ -22,7 +22,7 @@ class App {
       cors({
         origin: config.FRONTEND_URL,
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-        allowedHeaders: "Content-Type, Authorization",
+        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
       }),
     );
