@@ -1,75 +1,103 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { Sidebar } from "@/components/layout/sidebar";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Menu, X } from "lucide-react";
 
-export default function DashboardLayout({
-   children,
-}: {
+interface DashboardLayoutProps {
    children: React.ReactNode;
-}) {
-   const { user, logout, loading } = useAuth();
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+   const { user, loading } = useAuth();
    const router = useRouter();
-   const pathname = usePathname();
+   const [sidebarOpen, setSidebarOpen] = useState(false);
+   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
    useEffect(() => {
       if (!loading && !user) {
          router.push("/login");
       }
-   }, [loading, user, router]);
+   }, [user, loading, router]);
 
-   if (loading || !user) return <div className="p-8">Loading...</div>;
+   if (loading) {
+      return (
+         <div className="min-h-screen flex items-center justify-center">
+            <LoadingSpinner size="lg" />
+         </div>
+      );
+   }
 
-   // Sidebar items per role
-   const sidebarItems =
-      user.role === "CUSTOMER"
-         ? [
-              { label: "Dashboard", href: "/dashboard/customer" },
-              //   { label: "My Bookings", href: "/dashboard/customer/bookings" },
-           ]
-         : user.role === "HOTEL_OWNER"
-         ? [
-              { label: "Dashboard", href: "/dashboard/hotel-owner" },
-              //   { label: "Manage Rooms", href: "/dashboard/hotel-owner/rooms" },
-           ]
-         : [
-              { label: "Dashboard", href: "/dashboard/admin" },
-              //   { label: "Manage Hotels", href: "/dashboard/admin/hotels" },
-              //   { label: "Manage Users", href: "/dashboard/admin/users" },
-           ];
+   if (!user) {
+      return null;
+   }
 
    return (
-      <div className="flex min-h-screen">
-         {/* Sidebar */}
-         <aside className="w-64 bg-muted p-4 border-r space-y-6">
-            <div className="text-xl font-bold">Booktel</div>
-            <nav className="flex flex-col gap-2">
-               {sidebarItems.map((item) => (
-                  <Link
-                     key={item.href}
-                     href={item.href}
-                     className={`px-3 py-2 rounded-md hover:bg-accent text-left ${
-                        pathname === item.href ? "bg-accent font-semibold" : ""
-                     }`}
-                  >
-                     {item.label}
-                  </Link>
-               ))}
-            </nav>
-            <Button
-               variant="destructive"
-               onClick={logout}
-               className="w-full"
-            >
-               Logout
-            </Button>
-         </aside>
+      <div className="min-h-screen bg-gray-50">
+         {/* Mobile Sidebar Overlay */}
+         {sidebarOpen && (
+            <div 
+               className="fixed inset-0 z-50 bg-black bg-opacity-50 lg:hidden"
+               onClick={() => setSidebarOpen(false)}
+            />
+         )}
 
+         {/* Sidebar */}
+         <div className={`
+            fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            ${sidebarCollapsed ? 'lg:w-16' : 'w-64'}
+         `}>
+            <Sidebar 
+               onClose={() => setSidebarOpen(false)} 
+               collapsed={sidebarCollapsed}
+               onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
+         </div>
+         
          {/* Main Content */}
-         <main className="flex-1 p-6">{children}</main>
+         <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
+            {/* Mobile Header */}
+            <div className="lg:hidden sticky top-0 z-40 flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm">
+               <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(true)}
+                  className="h-10 w-10"
+               >
+                  <Menu className="h-5 w-5" />
+               </Button>
+               <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+               <div className="w-10" />
+            </div>
+
+            {/* Desktop Header */}
+            <div className="hidden lg:flex sticky top-0 z-40 items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm">
+               <div className="flex items-center space-x-4">
+                  <Button
+                     variant="ghost"
+                     size="icon"
+                     onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                     className="h-10 w-10"
+                  >
+                     {sidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                  </Button>
+                  <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+               </div>
+            </div>
+
+            <main className="min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-4rem)]">
+               <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="max-w-7xl mx-auto">
+                     {children}
+                  </div>
+               </div>
+            </main>
+         </div>
       </div>
    );
 }
