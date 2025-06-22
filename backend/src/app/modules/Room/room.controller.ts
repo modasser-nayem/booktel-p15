@@ -9,7 +9,7 @@ const addRoom = async (req: Request, res: Response) => {
   });
 
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: 201,
     success: true,
     message: "New Room Successfully added",
     data: result,

@@ -27,4 +27,17 @@ const webhook = async (req: Request, res: Response) => {
   });
 };
 
-export const paymentController = { checkout, webhook };
+const getPaymentDetails = async (req: Request, res: Response) => {
+  const paymentId = req.params.id;
+
+  const result = await paymentService.getPaymentDetails(paymentId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Payment details retrieved successfully",
+    data: result,
+  });
+};
+
+export const paymentController = { checkout, webhook, getPaymentDetails };

@@ -3,8 +3,13 @@ import AppError from "../../errors/AppError";
 import { TAddRoom, TUpdateRoom } from "./room.interface";
 
 const addRoom = async (data: TAddRoom) => {
-  if (!(await roomRepository.getHotelById(data.hotelId))) {
+  const hotel = await roomRepository.getHotelById(data.hotelId);
+  if (!hotel) {
     throw new AppError(404, "invalid hotel_id");
+  }
+
+  if (hotel.status !== "APPROVED") {
+    throw new AppError(400, "hotel is not approved yet");
   }
 
   return await roomRepository.addRoom(data);

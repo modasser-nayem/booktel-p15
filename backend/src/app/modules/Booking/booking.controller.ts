@@ -17,7 +17,10 @@ const bookARoom = async (req: Request, res: Response) => {
 };
 
 const getMyBooking = async (req: Request, res: Response) => {
-  const result = await bookingService.getMyBooking(req.user.id);
+  const result = await bookingService.getMyBooking({
+    userId: req.user.id,
+    query: req.query,
+  });
 
   sendResponse(res, {
     statusCode: 200,
