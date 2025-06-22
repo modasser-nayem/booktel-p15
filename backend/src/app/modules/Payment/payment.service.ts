@@ -19,7 +19,7 @@ const checkout = async (payload: { bookingId: string }) => {
     throw new AppError(400, "Cancelled booking can't be paid for");
   }
 
-  const alreadyPaid = await bookingRepository.findPaidBooking(booking.id);
+  const alreadyPaid = await bookingRepository.findPaymentByBookId(booking.id);
 
   if (alreadyPaid) {
     throw new AppError(400, "Booking already paid");
@@ -84,4 +84,13 @@ const webhook = async (payload: { signature: string; body: Buffer }) => {
   return { received: true };
 };
 
-export const paymentService = { checkout, webhook };
+const getPaymentDetails = async (paymentId: string) => {
+  const payment = await bookingRepository.findPaymentById(paymentId);
+
+  if (!payment) {
+    throw new AppError(404, "Payment not found");
+  }
+  return payment;
+};
+
+export const paymentService = { checkout, webhook, getPaymentDetails };

@@ -22,4 +22,11 @@ router.post(
   asyncHandler(paymentController.webhook),
 );
 
+// Get Payment Details
+router.get(
+  "/:id",
+  authorize(),
+  asyncHandler(paymentController.getPaymentDetails),
+);
+
 export const paymentRoutes = router;

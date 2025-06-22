@@ -57,6 +57,7 @@ export const getHotels = async (query: TGetHotelsQuery) => {
   // =======================
   // Dynamic WHERE conditions
   // =======================
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {
     ...(location && { location: { contains: location, mode: "insensitive" } }),
     ...(status && { status: status.toUpperCase() }), // assuming HotelStatus enum values
@@ -104,7 +105,7 @@ export const getHotels = async (query: TGetHotelsQuery) => {
   // =======================
   // Execute paginated query
   // =======================
-  const result = await paginate<Hotel>({
+  const result = await paginate<Hotel[]>({
     model: prisma.hotel,
     page,
     limit,
@@ -169,7 +170,17 @@ const getHotelDetails = async (hotelId: string) => {
       location: true,
       photos: true,
       status: true,
-      rooms: true,
+      rooms: {
+        select: {
+          id: true,
+          type: true,
+          beds: true,
+          price: true,
+          photos: true,
+          availableFrom: true,
+          availableTo: true,
+        },
+      },
       createdAt: true,
       updatedAt: true,
     },

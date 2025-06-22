@@ -1,6 +1,6 @@
 import { bookingRepository } from "../../db/repositories/booking.repository";
 import AppError from "../../errors/AppError";
-import { TBookARoom } from "./booking.interface";
+import { TBookARoom, TGetBookingQuery } from "./booking.interface";
 
 const bookARoom = async (data: TBookARoom) => {
   // TODO: for hosting issus, i clean expire pending bookings in here
@@ -48,8 +48,11 @@ const bookARoom = async (data: TBookARoom) => {
   return bookingRepository.bookARoom({ ...data, totalPrice });
 };
 
-const getMyBooking = async (userId: string) => {
-  return await bookingRepository.getMyBooking(userId);
+const getMyBooking = async (payload: {
+  userId: string;
+  query: TGetBookingQuery;
+}) => {
+  return await bookingRepository.getMyBooking(payload);
 };
 
 const getBookingDetails = async (bookId: string) => {
