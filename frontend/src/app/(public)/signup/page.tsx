@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { authService } from "@/services/endpoints/authService";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useState } from "react";
@@ -20,12 +19,15 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/context/AuthContext";
 
 const schema = z
    .object({
       name: z.string().min(2, "Name must be at least 2 characters"),
       email: z.string().email("Enter a valid email"),
       password: z.string().min(6, "Password must be at least 6 characters"),
+      role: z.enum(["CUSTOMER", "HOTEL_OWNER"]),
       confirmPassword: z.string(),
    })
    .refine((data) => data.password === data.confirmPassword, {
@@ -38,30 +40,30 @@ type SignupFormData = z.infer<typeof schema>;
 export default function SignupPage() {
    const form = useForm<SignupFormData>({
       resolver: zodResolver(schema),
+      defaultValues: {
+         role: "CUSTOMER"
+      }
    });
+
+   const { signup } = useAuth();
+
    const router = useRouter();
    const [loading, setLoading] = useState(false);
 
    const onSubmit = async (data: SignupFormData) => {
       setLoading(true);
       try {
-         const response = await authService.signup(data);
-
-         if (response?.data?.success) {
-            toast.success(
-               response.data.message || "Account created successfully!"
-            );
-            router.push("/login");
-         } else {
-            toast.error(
-               response?.data.message || "Signup failed. Please try again."
-            );
-         }
+         await signup(data);
+         toast.success("Successfully Sign Up!");
+         router.push("/login");
+         router.refresh();
          // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-         toast.error(
-            error?.response?.data?.message || "Signup failed. Please try again."
-         );
+         if (error?.response?.data?.message) {
+            toast.error(error.response.data.message);
+         } else {
+            toast.error("Signup failed! try again");
+         }
       } finally {
          setLoading(false);
       }
@@ -109,6 +111,28 @@ export default function SignupPage() {
                                     {...field}
                                  />
                               </FormControl>
+                              <FormMessage />
+                           </FormItem>
+                        )}
+                     />
+
+                     <FormField
+                        control={form.control}
+                        name="role"
+                        render={({ field }) => (
+                           <FormItem>
+                              <Label>Account Type</Label>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                 <FormControl>
+                                    <SelectTrigger>
+                                       <SelectValue placeholder="Select your account type" />
+                                    </SelectTrigger>
+                                 </FormControl>
+                                 <SelectContent>
+                                    <SelectItem value="CUSTOMER">Customer</SelectItem>
+                                    <SelectItem value="HOTEL_OWNER">Hotel Owner</SelectItem>
+                                 </SelectContent>
+                              </Select>
                               <FormMessage />
                            </FormItem>
                         )}
