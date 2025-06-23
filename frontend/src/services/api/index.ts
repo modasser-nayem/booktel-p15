@@ -54,6 +54,8 @@ export const userService = {
       limit?: number;
       role?: UserRole;
       email?: string;
+      sortBy?: string;
+      sortOrder?: string;
    }) =>
       api.get<ApiResponse<PaginatedResponse<User[]>>>("/users", {
          params: filters,

@@ -46,6 +46,7 @@ export default function Profile() {
     try {
       await updateUser(data);
       toast.success("Profile updated successfully!");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);

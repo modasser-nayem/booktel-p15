@@ -18,11 +18,12 @@ import {
 
 const ROLES: UserRole[] = ["ADMIN", "HOTEL_OWNER", "CUSTOMER"];
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
-const ORDER_FIELDS = [
+
+const SORT_FIELDS = [
   { value: "createdAt", label: "Created At" },
   { value: "name", label: "Name" },
 ];
-const ORDER_DIRECTIONS = [
+const SORT_DIRECTIONS = [
   { value: "asc", label: "Ascending" },
   { value: "desc", label: "Descending" },
 ];
@@ -57,6 +58,8 @@ export default function AdminUsers() {
   const debouncedEmail = useDebounce(email, 400);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const {
     data,
@@ -69,6 +72,8 @@ export default function AdminUsers() {
       email: debouncedEmail || undefined,
       page,
       limit,
+      sortBy,
+      sortOrder,
     });
     return res.data.data;
   });
@@ -84,13 +89,13 @@ export default function AdminUsers() {
   });
 
   useEffect(() => {
-    setPage(1); // Reset to first page on filter/search/limit change
-  }, [role, debouncedEmail, limit]);
+    setPage(1); // Reset to first page on filter/search/limit/sort change
+  }, [role, debouncedEmail, limit, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, debouncedEmail, page, limit]);
+  }, [role, debouncedEmail, page, limit, sortBy, sortOrder]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     await updateUserRole({ id: userId, role: newRole });
@@ -148,6 +153,32 @@ export default function AdminUsers() {
                 <SelectContent>
                   {PAGE_SIZE_OPTIONS.map((size) => (
                     <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full md:w-40">
+              <label className="block text-sm font-medium mb-1">Sort By</label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_FIELDS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full md:w-36">
+              <label className="block text-sm font-medium mb-1">Order</label>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_DIRECTIONS.map((d) => (
+                    <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
