@@ -7,7 +7,6 @@ logs/
 *.local
 
 # Build
-dist/
 output/
 dist-ssr/
 coverage/
