@@ -21,9 +21,9 @@ class App {
     this.app.use(
       cors({
         origin: config.FRONTEND_URL,
+        credentials: true,
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
       }),
     );
     this.app.use(express.json());
