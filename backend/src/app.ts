@@ -21,10 +21,10 @@ class App {
     this.app.use(
       cors({
         origin: config.FRONTEND_URL,
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
-      }),
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      })
     );
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
