@@ -19,6 +19,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { useState } from "react";
+import PublicRoute from "@/components/layout/PublicRoute";
 
 const schema = z.object({
    email: z.string().email("Enter a valid email"),
@@ -55,81 +56,83 @@ export default function LoginPage() {
    };
 
    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-         <Card className="w-full max-w-md shadow">
-            <CardContent className="p-6">
-               <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
+      <PublicRoute>
+         <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+            <Card className="w-full max-w-md shadow">
+               <CardContent className="p-6">
+                  <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
 
-               <Form {...form}>
-                  <form
-                     onSubmit={form.handleSubmit(onSubmit)}
-                     className="space-y-5"
-                  >
-                     <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                           <FormItem>
-                              <Label>Email</Label>
-                              <FormControl>
-                                 <Input
-                                    placeholder="you@example.com"
-                                    {...field}
-                                 />
-                              </FormControl>
-                              <FormMessage />
-                           </FormItem>
-                        )}
-                     />
-
-                     <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                           <FormItem>
-                              <Label>Password</Label>
-                              <FormControl>
-                                 <Input
-                                    type="password"
-                                    placeholder="********"
-                                    {...field}
-                                 />
-                              </FormControl>
-                              <FormMessage />
-                           </FormItem>
-                        )}
-                     />
-
-                     <div className="flex justify-end">
-                        <Link
-                           href="/forgot-password"
-                           className="text-sm text-blue-600 hover:underline"
-                        >
-                           Forgot your password?
-                        </Link>
-                     </div>
-
-                     <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={loading}
+                  <Form {...form}>
+                     <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-5"
                      >
-                        {loading ? "Logging in..." : "Login"}
-                     </Button>
+                        <FormField
+                           control={form.control}
+                           name="email"
+                           render={({ field }) => (
+                              <FormItem>
+                                 <Label>Email</Label>
+                                 <FormControl>
+                                    <Input
+                                       placeholder="you@example.com"
+                                       {...field}
+                                    />
+                                 </FormControl>
+                                 <FormMessage />
+                              </FormItem>
+                           )}
+                        />
 
-                     <p className="text-sm text-center text-gray-600">
-                        Don&apos;t have an account?{" "}
-                        <Link
-                           href="/signup"
-                           className="text-blue-600 hover:underline"
+                        <FormField
+                           control={form.control}
+                           name="password"
+                           render={({ field }) => (
+                              <FormItem>
+                                 <Label>Password</Label>
+                                 <FormControl>
+                                    <Input
+                                       type="password"
+                                       placeholder="********"
+                                       {...field}
+                                    />
+                                 </FormControl>
+                                 <FormMessage />
+                              </FormItem>
+                           )}
+                        />
+
+                        <div className="flex justify-end">
+                           <Link
+                              href="/forgot-password"
+                              className="text-sm text-blue-600 hover:underline"
+                           >
+                              Forgot your password?
+                           </Link>
+                        </div>
+
+                        <Button
+                           type="submit"
+                           className="w-full"
+                           disabled={loading}
                         >
-                           Signup
-                        </Link>
-                     </p>
-                  </form>
-               </Form>
-            </CardContent>
-         </Card>
-      </div>
+                           {loading ? "Logging in..." : "Login"}
+                        </Button>
+
+                        <p className="text-sm text-center text-gray-600">
+                           Don&apos;t have an account?{" "}
+                           <Link
+                              href="/signup"
+                              className="text-blue-600 hover:underline"
+                           >
+                              Signup
+                           </Link>
+                        </p>
+                     </form>
+                  </Form>
+               </CardContent>
+            </Card>
+         </div>
+      </PublicRoute>
    );
 }
