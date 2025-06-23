@@ -22,9 +22,9 @@ class App {
       cors({
         origin: config.FRONTEND_URL,
         credentials: true,
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-        allowedHeaders: ["Content-Type", "Authorization"],
-      }),
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      })
     );
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
