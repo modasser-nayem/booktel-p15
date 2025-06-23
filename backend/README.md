@@ -6,7 +6,7 @@ A modern, scalable, and role-based hotel booking management system built with a 
 
 ## 🌐 Live Demo
 
-- **Backend API**: [booktel-server.onrender.com](https://booktel-server.onrender.com)
+- **Backend API**: [https://booktel-server.vercel.app](https://booktel-server.vercel.app)
 - **Frontend**: [booktel-p15.vercel.app](https://booktel-p15.vercel.app) | [frontend-code](https://github.com/modasser-nayem/booktel-p15/tree/main/frontend)
 
 ---
@@ -97,7 +97,7 @@ The backend follows a layered, modular architecture with:
 
 ## 📬 API Endpoints
 
-> Base URL: `https://booktel-server.onrender.com/api/v1`
+> Base URL: `https://booktel-server.vercel.app/api/v1`
 
 - **API Documentation (postman)**: [https://documenter.getpostman.com/view/22696421/2sB2x8EWET](https://documenter.getpostman.com/view/22696421/2sB2x8EWET)
 
