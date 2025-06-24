@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { PageHeader, ImageUpload } from "@/components/shared";
 import { Building, ArrowLeft } from "lucide-react";
 import { hotelService } from "@/services/api";
-import { CreateHotel } from "@/types";
+import { CreateHotel, TGetHotelDetails } from "@/types";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 const hotelSchema = z.object({
   name: z.string().min(1, "Hotel name is required"),
@@ -49,17 +49,23 @@ const amenityOptions = [
   "Pet Friendly",
 ];
 
-export default function NewHotelPage() {
+export default function EditHotelPage() {
   const router = useRouter();
+  const params = useParams();
+  const hotelId = params.id as string;
+  
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
+  const [hotel, setHotel] = useState<TGetHotelDetails | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = useForm<HotelFormData>({
     resolver: zodResolver(hotelSchema),
     defaultValues: {
@@ -67,6 +73,39 @@ export default function NewHotelPage() {
       photos: [],
     },
   });
+
+  useEffect(() => {
+    const fetchHotel = async () => {
+      try {
+        setFetching(true);
+        const response = await hotelService.getHotelDetails(hotelId);
+        const hotelData = response.data.data;
+        setHotel(hotelData);
+        
+        // Pre-fill the form
+        reset({
+          name: hotelData.name,
+          description: hotelData.description,
+          location: hotelData.location,
+          amenities: hotelData.amenities,
+          photos: hotelData.photos,
+        });
+        
+        setSelectedAmenities(hotelData.amenities);
+        setImages(hotelData.photos);
+      } catch (error) {
+        console.error("Error fetching hotel:", error);
+        toast.error("Failed to fetch hotel details");
+        router.push("/dashboard/hotel-owner/hotels");
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    if (hotelId) {
+      fetchHotel();
+    }
+  }, [hotelId, router, reset]);
 
   const handleAmenityToggle = (amenity: string) => {
     const updated = selectedAmenities.includes(amenity)
@@ -85,7 +124,7 @@ export default function NewHotelPage() {
   const onSubmit = async (data: HotelFormData) => {
     try {
       setLoading(true);
-      const hotelData: CreateHotel = {
+      const hotelData: Partial<CreateHotel> = {
         name: data.name,
         description: data.description,
         location: data.location,
@@ -93,24 +132,48 @@ export default function NewHotelPage() {
         photos: data.photos,
       };
 
-      await hotelService.createHotel(hotelData);
-      toast.success("Hotel created successfully!");
-      router.push("/dashboard/hotel-owner/hotels");
+      await hotelService.updateHotel(hotelId, hotelData);
+      toast.success("Hotel updated successfully!");
+      router.push(`/dashboard/hotel-owner/hotels/${hotelId}`);
     } catch (error) {
-      console.error("Error creating hotel:", error);
-      toast.error("Failed to create hotel");
+      console.error("Error updating hotel:", error);
+      toast.error("Failed to update hotel");
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!hotel) {
+    return (
+      <div className="text-center py-12">
+        <Building className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Hotel not found</h2>
+        <p className="text-gray-600 mb-4">The hotel you&apos;re trying to edit doesn&apos;t exist.</p>
+        <Link href="/dashboard/hotel-owner/hotels">
+          <Button>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Hotels
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Add New Hotel"
-        subtitle="Create a new hotel property"
+        title="Edit Hotel"
+        subtitle={`Editing ${hotel.name}`}
         showBackButton
-        backHref="/dashboard/hotel-owner/hotels"
+        backHref={`/dashboard/hotel-owner/hotels/${hotelId}`}
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -220,17 +283,17 @@ export default function NewHotelPage() {
 
         {/* Submit Buttons */}
         <div className="flex justify-end space-x-4">
-          <Link href="/dashboard/hotel-owner/hotels">
+          <Link href={`/dashboard/hotel-owner/hotels/${hotelId}`}>
             <Button type="button" variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Cancel
             </Button>
           </Link>
           <Button type="submit" disabled={loading}>
-            {loading ? "Creating..." : "Create Hotel"}
+            {loading ? "Updating..." : "Update Hotel"}
           </Button>
         </div>
       </form>
     </div>
   );
-}
+} 

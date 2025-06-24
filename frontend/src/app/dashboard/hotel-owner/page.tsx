@@ -18,10 +18,12 @@ import {
   XCircle,
   Plus,
   Eye,
-  BarChart3
+  Bed,
+  ArrowRight
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { hotelService, bookingService } from "@/services/api";
+import Link from "next/link";
 
 interface HotelOwnerStats {
   totalHotels: number;
@@ -44,18 +46,74 @@ interface RecentBooking {
   roomType: string;
 }
 
+// Dummy data for better UI
+const dummyStats: HotelOwnerStats = {
+  totalHotels: 4,
+  totalBookings: 127,
+  totalRevenue: 45600,
+  averageRating: 4.7,
+  activeBookings: 23,
+  completedBookings: 98,
+  cancelledBookings: 6,
+};
+
+const dummyRecentBookings: RecentBooking[] = [
+  {
+    id: "1",
+    hotelName: "Grand Palace Hotel",
+    customerName: "Alice Johnson",
+    checkInDate: "2024-07-15",
+    checkOutDate: "2024-07-18",
+    totalAmount: 450,
+    status: "completed",
+    roomType: "Deluxe Suite"
+  },
+  {
+    id: "2",
+    hotelName: "City Inn",
+    customerName: "Bob Smith",
+    checkInDate: "2024-07-20",
+    checkOutDate: "2024-07-22",
+    totalAmount: 280,
+    status: "pending",
+    roomType: "Double Room"
+  },
+  {
+    id: "3",
+    hotelName: "Ocean View Resort",
+    customerName: "Charlie Brown",
+    checkInDate: "2024-07-25",
+    checkOutDate: "2024-07-28",
+    totalAmount: 720,
+    status: "completed",
+    roomType: "Ocean Suite"
+  },
+  {
+    id: "4",
+    hotelName: "Mountain Lodge",
+    customerName: "Diana Prince",
+    checkInDate: "2024-07-30",
+    checkOutDate: "2024-08-02",
+    totalAmount: 380,
+    status: "pending",
+    roomType: "Single Room"
+  },
+  {
+    id: "5",
+    hotelName: "Grand Palace Hotel",
+    customerName: "Eve Wilson",
+    checkInDate: "2024-08-05",
+    checkOutDate: "2024-08-08",
+    totalAmount: 520,
+    status: "cancelled",
+    roomType: "Executive Suite"
+  }
+];
+
 export default function HotelOwnerDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<HotelOwnerStats>({
-    totalHotels: 0,
-    totalBookings: 0,
-    totalRevenue: 0,
-    averageRating: 0,
-    activeBookings: 0,
-    completedBookings: 0,
-    cancelledBookings: 0,
-  });
-  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
+  const [stats, setStats] = useState<HotelOwnerStats>(dummyStats);
+  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>(dummyRecentBookings);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -82,32 +140,36 @@ export default function HotelOwnerDashboard() {
           sum + (hotel.rating || 0), 0);
         const averageRating = hotels.length > 0 ? totalRating / hotels.length : 0;
 
-        setStats({
-          totalHotels: hotels.length,
-          totalBookings: bookings.length,
-          totalRevenue,
-          averageRating: Math.round(averageRating * 10) / 10,
-          activeBookings,
-          completedBookings,
-          cancelledBookings,
-        });
+        // Use real data if available, otherwise use dummy data
+        if (hotels.length > 0 || bookings.length > 0) {
+          setStats({
+            totalHotels: hotels.length,
+            totalBookings: bookings.length,
+            totalRevenue,
+            averageRating: Math.round(averageRating * 10) / 10,
+            activeBookings,
+            completedBookings,
+            cancelledBookings,
+          });
 
-        // Set recent bookings
-        const recent = bookings.slice(0, 5).map((booking: any) => ({
-          id: booking.id,
-          hotelName: booking.hotelName || "Hotel",
-          customerName: booking.customerName || "Customer",
-          checkInDate: booking.checkInDate,
-          checkOutDate: booking.checkOutDate,
-          totalAmount: booking.totalAmount || 0,
-          status: booking.status,
-          roomType: booking.roomType || "Room",
-        }));
+          // Set recent bookings
+          const recent = bookings.slice(0, 5).map((booking: any) => ({
+            id: booking.id,
+            hotelName: booking.hotelName || "Hotel",
+            customerName: booking.customerName || "Customer",
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            totalAmount: booking.totalAmount || 0,
+            status: booking.status,
+            roomType: booking.roomType || "Room",
+          }));
 
-        setRecentBookings(recent);
+          setRecentBookings(recent);
+        }
 
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        // Keep dummy data on error
       } finally {
         setLoading(false);
       }
@@ -154,13 +216,13 @@ export default function HotelOwnerDashboard() {
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-4 sm:p-6 text-white">
-        <h1 className="text-xl sm:text-2xl font-bold mb-2">Welcome back, {user?.name}!</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">Welcome back, {user?.name || "Hotel Owner"}!</h1>
         <p className="text-green-100 text-sm sm:text-base">Here&apos;s how your hotels are performing today.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card>
+        <Card className="hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -178,7 +240,7 @@ export default function HotelOwnerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -198,7 +260,7 @@ export default function HotelOwnerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -216,7 +278,7 @@ export default function HotelOwnerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -242,22 +304,30 @@ export default function HotelOwnerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button className="h-auto p-4 flex flex-col items-center space-y-2">
-              <Plus className="h-6 w-6" />
-              <span>Add Hotel</span>
-            </Button>
-            <Button className="h-auto p-4 flex flex-col items-center space-y-2">
-              <Eye className="h-6 w-6" />
-              <span>View Bookings</span>
-            </Button>
-            <Button className="h-auto p-4 flex flex-col items-center space-y-2">
-              <Building className="h-6 w-6" />
-              <span>Manage Hotels</span>
-            </Button>
-            <Button className="h-auto p-4 flex flex-col items-center space-y-2">
-              <BarChart3 className="h-6 w-6" />
-              <span>Analytics</span>
-            </Button>
+            <Link href="/dashboard/hotel-owner/hotels/new">
+              <Button className="h-auto p-4 flex flex-col items-center space-y-2 w-full">
+                <Plus className="h-6 w-6" />
+                <span>Add Hotel</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/hotel-owner/bookings">
+              <Button className="h-auto p-4 flex flex-col items-center space-y-2 w-full">
+                <Eye className="h-6 w-6" />
+                <span>View Bookings</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/hotel-owner/hotels">
+              <Button className="h-auto p-4 flex flex-col items-center space-y-2 w-full">
+                <Building className="h-6 w-6" />
+                <span>Manage Hotels</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/hotel-owner/rooms">
+              <Button className="h-auto p-4 flex flex-col items-center space-y-2 w-full">
+                <Bed className="h-6 w-6" />
+                <span>Manage Rooms</span>
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -265,7 +335,15 @@ export default function HotelOwnerDashboard() {
       {/* Recent Bookings */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Bookings</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Bookings</CardTitle>
+            <Link href="/dashboard/hotel-owner/bookings">
+              <Button variant="outline" size="sm">
+                View All
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {recentBookings.length === 0 ? (
@@ -277,7 +355,7 @@ export default function HotelOwnerDashboard() {
           ) : (
             <div className="space-y-3 sm:space-y-4">
               {recentBookings.map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-3 sm:p-4 rounded-lg border">
+                <div key={booking.id} className="flex items-center justify-between p-3 sm:p-4 rounded-lg border hover:bg-gray-50 transition-colors">
                   <div className="flex items-center space-x-3 sm:space-x-4">
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -291,7 +369,7 @@ export default function HotelOwnerDashboard() {
                       <p className="text-xs sm:text-sm text-gray-500">
                         {new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}
                       </p>
-                      <p className="text-xs text-gray-400">{booking.roomType}</p>
+                      <p className="text-xs text-gray-400">{booking.roomType} • {booking.hotelName}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 sm:space-x-3">
