@@ -105,7 +105,7 @@ export const roomService = {
       api.post<ApiResponse<Room>>(`/hotels/${hotelId}/rooms`, data),
 
    getListOfHotelRoom: (hotelId: string) =>
-      api.get<ApiResponse<PaginatedResponse<Room[]>>>(`/hotels/${hotelId}/rooms`),
+      api.get<ApiResponse<Room[]>>(`/hotels/${hotelId}/rooms`),
 
    getRoomDetails: (id: string) => api.get<ApiResponse<Room>>(`/rooms/${id}`),
 
